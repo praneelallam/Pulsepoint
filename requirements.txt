@@ -4,3 +4,4 @@ opencv-python-headless
 faster-whisper
 ctranslate2
 tqdm
+imageio-ffmpeg
