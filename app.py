@@ -38,20 +38,31 @@ def rms_between(prefix, sr, start, end):
     s = float(prefix[i1-1] - (prefix[i0-1] if i0>0 else 0.0))
     return math.sqrt(s/(i1-i0))
 
+from faster_whisper import WhisperModel
+
 @st.cache_resource
-def load_whisper_model(model_size: str):
-    import torch, whisper
-    # model_size: tiny/base/small/medium/large
-    return whisper.load_model(model_size)
+def load_fw_model(model_size: str):
+    # Streamlit Cloud is CPU-only, so use int8 for speed
+    return WhisperModel(model_size, device="cpu", compute_type="int8")
 
 def transcribe_whisper(wav_path, model_size="small", language=None):
-    import torch
-    model = load_whisper_model(model_size)
-    res = model.transcribe(wav_path, language=language, fp16=bool(torch.cuda.is_available()), verbose=False)
-    segs = []
-    for seg in res.get("segments", []):
-        segs.append({"start": float(seg["start"]), "end": float(seg["end"]), "text": (seg.get("text") or "").strip()})
-    return segs
+    model = load_fw_model(model_size)
+
+    segments_out = []
+    segments_iter, info = model.transcribe(
+        wav_path,
+        language=language,
+        beam_size=3,
+        vad_filter=True
+    )
+    for seg in segments_iter:
+        segments_out.append({
+            "start": float(seg.start),
+            "end": float(seg.end),
+            "text": (seg.text or "").strip()
+        })
+    return segments_out
+
 
 WISDOM_KEYWORDS = [
     "key","important","lesson","learned","truth","mistake","rule","framework","principle",
@@ -353,11 +364,12 @@ st.caption("Upload a long video → generates 5 short vertical reels with face-c
 
 with st.sidebar:
     st.header("Settings")
-    n_shorts = st.slider("Number of shorts", 1, 5, 5)
+    n_shorts = st.slider("Number of shorts", 1, 5, 3)
     target_sec = st.slider("Target seconds", 15, 60, 30)
     tol_sec = st.slider("Tolerance (± sec)", 2, 15, 8)
     min_gap = st.slider("Min gap between clips (sec)", 0, 15, 3)
-    whisper_model = st.selectbox("Whisper model", ["small", "medium"], index=1)
+    whisper_model = st.selectbox("Whisper model", ["small", "medium"], index=0)
+
 
     st.subheader("Captions")
     burn_captions = st.checkbox("Burn captions into video", value=True)
@@ -366,7 +378,8 @@ with st.sidebar:
     hook_font = st.slider("Hook font size", 24, 60, 40)
 
     st.subheader("Face crop")
-    detect_every = st.slider("Detect face every N frames", 1, 10, 3)
+    detect_every = st.slider("Detect face every N frames", 1, 10, 5)
+
     require_face = st.checkbox("Require face detection (strict)", value=True)
 
 uploaded = st.file_uploader("Upload MP4", type=["mp4", "mov", "mkv"])
@@ -422,3 +435,4 @@ if st.button("Generate Shorts", type="primary"):
     except Exception as e:
         status.update(label="Failed ❌", state="error", expanded=True)
         st.exception(e)
+
