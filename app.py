@@ -392,7 +392,7 @@ with st.sidebar:
     hook_font = st.slider("Hook font size", 24, 60, 40)
 
     st.subheader("Face crop")
-    detect_every = st.slider("Detect face every N frames", 1, 10, 2)
+    detect_every = st.slider("Detect face every N frames", 1, 10, 4)
 
     require_face = st.checkbox("Require face detection (strict)", value=True)
 
@@ -449,6 +449,7 @@ if st.button("Generate Shorts", type="primary"):
     except Exception as e:
         status.update(label="Failed ❌", state="error", expanded=True)
         st.exception(e)
+
 
 
 
