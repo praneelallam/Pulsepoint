@@ -12,7 +12,7 @@ https://drive.google.com/file/d/1xiHLJTsMMODo5uZO27tZn9FI-hy5K6_7/view
 ## Result of demo:
 https://drive.google.com/file/d/1NGGbwPDx2F6DVfIqXHChg39tEgdq9zBQ/view?usp=sharing
 
-the demo viedo is 8mins long so if u want to check the result click the above link.
+the demo video is 8mins long so if u want to check the result click the above link.
 
 ## What This Project Does
 This project converts long-form videos (podcasts, talks, interviews) into
