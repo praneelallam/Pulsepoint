@@ -2,7 +2,7 @@
 # PulsePoint AI – Shorts Generator
 
 ## Live App
-PASTE_YOUR_STREAMLIT_CLOUD_LINK_HERE
+(https://pulsepoint-weuc8mbhqjfqbfdkdy39fu.streamlit.app/)
 
 ## Demo Video (Mandatory)
 https://drive.google.com/file/d/1xiHLJTsMMODo5uZO27tZn9FI-hy5K6_7/view
@@ -17,6 +17,13 @@ Features:
 - Tiny bottom captions for readability
 - Generates 5 non-overlapping shorts per video
 - Downloadable MP4 + SRT captions
+- ## Optional LLM Enhancement
+The current deployment uses deterministic multimodal heuristics for clip selection
+(text + audio signals), which works out-of-the-box with no API keys. It allows api keys and was used to make demos as well, so for better use, add ur own gemini api key
+
+Optionally, users can enable LLM-based re-ranking (e.g., Gemini) by providing an API key
+to further refine clip selection and hooks, as demonstrated in the demo video.
+
 
 ## How It Works
 1. Upload a long video
