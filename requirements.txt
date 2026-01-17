@@ -1,6 +1,6 @@
 streamlit
 numpy
 opencv-python-headless
-openai-whisper
-torch
+faster-whisper
+ctranslate2
 tqdm
