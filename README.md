@@ -4,7 +4,7 @@
 ## Live App
 (https://pulsepoint-weuc8mbhqjfqbfdkdy39fu.streamlit.app/)
 
-## Demo Video (Mandatory)
+## Demo Video (Mandatory) along with process:
 https://drive.google.com/file/d/1xiHLJTsMMODo5uZO27tZn9FI-hy5K6_7/view
 
 
