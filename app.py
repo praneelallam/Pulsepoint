@@ -5,6 +5,20 @@ from pathlib import Path
 import streamlit as st
 import numpy as np
 import cv2
+import shutil
+
+def get_ffmpeg():
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return "ffmpeg"
+
+FFMPEG = get_ffmpeg()
+
 
 
 # -----------------------------
@@ -17,7 +31,7 @@ def sh(cmd):
     return r.stdout
 
 def extract_audio_wav(video_path, wav_path, sr=16000):
-    sh(["ffmpeg","-y","-i",video_path,"-vn","-ac","1","-ar",str(sr),"-c:a","pcm_s16le",wav_path])
+    sh([FFMPEG,"-y","-i",video_path,"-vn","-ac","1","-ar",str(sr),"-c:a","pcm_s16le",wav_path])
 
 def load_wav_mono16(wav_path):
     with wave.open(wav_path, "rb") as wf:
@@ -181,7 +195,7 @@ def write_srt(segments, start, end, srt_path):
 
 def cut_clip(video_path, start, end, out_path):
     dur = max(0.01, end-start)
-    sh(["ffmpeg","-y","-ss",f"{start:.3f}","-t",f"{dur:.3f}","-i",video_path,
+    sh([FFMPEG,"-y","-ss",f"{start:.3f}","-t",f"{dur:.3f}","-i",video_path,
         "-c:v","libx264","-preset","veryfast","-crf","18","-c:a","aac","-b:a","128k", out_path])
 
 def face_center_crop_vertical_silent(in_mp4, out_mp4, out_size=(720,1280), detect_every=3, alpha=0.85, require_face=True):
@@ -259,7 +273,7 @@ def face_center_crop_vertical_silent(in_mp4, out_mp4, out_size=(720,1280), detec
         raise RuntimeError("No face detected in this clip (require_face=True).")
 
 def mux_audio(video_silent, audio_src, out_with_audio):
-    sh(["ffmpeg","-y","-i",video_silent,"-i",audio_src,
+    sh([FFMPEG,"-y","-i",video_silent,"-i",audio_src,
         "-map","0:v:0","-map","1:a:0",
         "-c:v","libx264","-preset","veryfast","-crf","18",
         "-c:a","aac","-b:a","128k","-shortest", out_with_audio])
@@ -296,7 +310,7 @@ def burn_subs_and_hook(in_mp4, srt_path, out_mp4, hook=None, burn_captions=True,
         vf_parts.append(f"subtitles='{srt_abs}':force_style='{style}'")
 
     vf = ",".join(vf_parts) if vf_parts else "null"
-    sh(["ffmpeg","-y","-i",in_mp4,"-vf",vf,"-c:v","libx264","-preset","veryfast","-crf","18","-c:a","copy", out_mp4])
+    sh([FFMPEG,"-y","-i",in_mp4,"-vf",vf,"-c:v","libx264","-preset","veryfast","-crf","18","-c:a","copy", out_mp4])
 
 def generate_shorts(video_path, out_dir, n_shorts, target_sec, tol_sec, min_gap, whisper_model,
                     burn_captions=True, cap_font=16, cap_margin=30, hook_font=40,
@@ -335,7 +349,7 @@ def generate_shorts(video_path, out_dir, n_shorts, target_sec, tol_sec, min_gap,
             # fallback center crop (only if require_face=False)
             if require_face:
                 raise
-            sh(["ffmpeg","-y","-i",raw,"-vf","crop='ih*9/16:ih:(iw-ih*9/16)/2:0',scale=720:1280","-an",
+            sh([FFMPEG,"-y","-i",raw,"-vf","crop='ih*9/16:ih:(iw-ih*9/16)/2:0',scale=720:1280","-an",
                 "-c:v","libx264","-preset","veryfast","-crf","18", silent])
 
         mux_audio(silent, raw, vaud)
@@ -435,4 +449,5 @@ if st.button("Generate Shorts", type="primary"):
     except Exception as e:
         status.update(label="Failed ❌", state="error", expanded=True)
         st.exception(e)
+
 
